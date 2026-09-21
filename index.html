@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anti-Phishing Bot</title>
+<style>
+body{font-family:Inter,system-ui,sans-serif;background:#0b1020;color:#eef2ff;margin:0}
+main{max-width:920px;margin:60px auto;padding:24px}
+.card{background:#151c32;border:1px solid #2b3555;border-radius:18px;padding:24px;margin:18px 0}
+input,textarea,button{width:100%;box-sizing:border-box;border-radius:10px;padding:12px;margin-top:8px;border:1px solid #394563;background:#0d1428;color:#fff}
+button{cursor:pointer;background:#4f7cff;border:0;font-weight:700}
+.badge{display:inline-block;padding:7px 12px;border-radius:999px;background:#202b49}
+#result{white-space:pre-wrap;line-height:1.6}
+small{color:#9da9c9}
+</style>
+</head>
+<body>
+<main>
+<div class="badge">AI + Cybersecurity</div>
+<h1>🛡️ Anti-Phishing Bot</h1>
+<p>Interactive defensive phishing analysis for URLs and email content.</p>
+<div class="card">
+<h2>URL Scanner</h2>
+<input id="url" placeholder="https://example.com/login">
+<button onclick="scanUrl()">Analyze URL</button>
+</div>
+<div class="card">
+<h2>Email Scanner</h2>
+<input id="subject" placeholder="Email subject">
+<textarea id="body" rows="7" placeholder="Paste email content"></textarea>
+<button onclick="scanEmail()">Analyze Email</button>
+</div>
+<div class="card">
+<h2>Result</h2>
+<div id="result">Enter a URL or email above.</div>
+<small>Static demo uses client-side feature engineering. The full repository also contains the Streamlit + LangChain + Mistral pipeline.</small>
+</div>
+</main>
+<script>
+const terms=["login","verify","verification","password","account","secure","payment","wallet","signin"];
+const emailTerms=["urgent","immediately","verify","suspended","password","otp","payment","invoice","gift card","click here"];
+function result(score,signals){
+ let verdict=score>=70?"High-risk phishing":score>=40?"Suspicious":"Low-risk / no strong indicators";
+ let action=score>=40?"Do not click or submit credentials. Verify through an independently known official channel.":"No strong indicators detected; still verify unexpected requests.";
+ document.getElementById("result").textContent="Risk: "+score+"/100\nVerdict: "+verdict+"\n\nSignals:\n"+(signals.length?signals.map(x=>"• "+x).join("\n"):"• None detected")+"\n\nRecommended action:\n"+action;
+}
+function scanUrl(){
+ const raw=document.getElementById("url").value.trim(), u=raw.toLowerCase(); let s=0,a=[];
+ if(!raw)return;
+ if(!u.startsWith("https://")){s+=12;a.push("URL does not use HTTPS")}
+ if(u.includes("@")){s+=25;a.push("Uses @ in URL authority")}
+ if(/^https?:\/\/\d{1,3}(\.\d{1,3}){3}/.test(u)){s+=25;a.push("Uses an IP address instead of a domain")}
+ if(u.length>100){s+=8;a.push("Unusually long URL")}
+ if(["bit.ly","tinyurl.com","t.co","cutt.ly"].some(x=>u.includes(x))){s+=15;a.push("Uses a URL shortener")}
+ if((u.match(/\./g)||[]).length>=4){s+=10;a.push("Deep subdomain structure")}
+ const m=terms.filter(x=>u.includes(x)); if(m.length){s+=Math.min(20,m.length*5);a.push("Credential/account-themed URL terms: "+m.join(", "))}
+ result(Math.min(s,100),a);
+}
+function scanEmail(){
+ const t=(document.getElementById("subject").value+"\n"+document.getElementById("body").value).toLowerCase(); let s=0,a=[];
+ if(!t.trim())return;
+ emailTerms.forEach(x=>{if(t.includes(x)){s+=6;a.push("Suspicious language: '"+x+"'")}});
+ if(/https?:\/\//.test(t)){s+=8;a.push("Contains one or more links")}
+ if(/\b(password|otp|cvv|card number)\b/.test(t)){s+=25;a.push("Requests or references sensitive credentials")}
+ if(/\b(wire|gift card|crypto|payment)\b/.test(t)){s+=18;a.push("Financial/payment-related request")}
+ result(Math.min(s,100),[...new Set(a)]);
+}
+</script>
+</body>
+</html>
