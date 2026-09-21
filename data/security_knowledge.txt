@@ -1,0 +1,9 @@
+Phishing commonly uses urgency, account suspension claims, credential requests, impersonation, malicious links, and payment pressure.
+
+URL indicators include lookalike domains, excessive subdomains, unusual TLDs, IP-address hosts, URL shorteners, misleading paths, long URLs, and account or login terminology. These are signals rather than proof of maliciousness.
+
+Email indicators include urgent language, generic greetings, password or OTP requests, unexpected invoices, payment requests, gift-card requests, suspicious links, and instructions to bypass normal security procedures.
+
+Defensive verification should use an independently known website, phone number, bookmark, or official application rather than a link or contact method supplied by a suspicious message.
+
+A single heuristic should not determine a verdict. Context, domain ownership, sender authentication, user expectations, and independent verification should be considered together.
