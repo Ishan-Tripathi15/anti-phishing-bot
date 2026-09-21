@@ -1,0 +1,4 @@
+streamlit>=1.39
+langchain-core>=0.3
+langchain-mistralai>=0.2
+pytest>=8.0
